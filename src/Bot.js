@@ -3,8 +3,10 @@ const Backbone = require('backbone');
 const  _ = require('underscore');
 const rx = require('rx');
 const JiraApi = require('jira').JiraApi;
-const config = require('./config');
+const config = require('../config');
 const UserInteraction = require('./UserInteraction');
+const JiraHelper = require('./JiraHelper');
+
 class Bot{
     /**
      * @param token
@@ -33,63 +35,96 @@ class Bot{
 
     // Returns an {Observable} that signals completion of the game
     handleMessageEvent(){
-        let messages = rx.Observable.fromEvent(this.slack, 'message')
-            .where(e => e.type === 'message');
+        let messages = rx.Observable.fromEvent(this.slack, 'message').where(e => ( e.type === 'message' && e.subtype !='bot_message' ));
+        let mentionMessages = messages.where(e =>e.text.toLowerCase().match(/(\w+\-\d+)/i));
 
-        //let mentionMessages = messages.where(e =>e.text.toLowerCase().match(/(\w+\-\d+)/i));
-        let mentionMessages = messages.where(e =>e.text.toLowerCase().match(/thuyan/i));
-
-        return mentionMessages
-            .map(e => this.slack.getChannelGroupOrDMByID(e.channel))
-            .flatMap(channel => this.doMessages(messages, channel))
-            .subscribe();
-    }
-    doMessageError(){
-
-    }
-    doMessageCompleted(){
-        console.log('doMessageCompleted');
+        return mentionMessages.subscribe((e)=>this.doMessages(e));
     }
     /**
      * Do the messages with issue mention.
      * @param messages
      * @param channel
      */
-    // Returns an {Observable} that signals completion of the game
-    doMessages(messages, channel){
-        // Listen for messages directed at the bot containing 'quit game.'
-        messages.where(e =>e.text.toLowerCase().match(/thuyan/i)).subscribe(e => {
-                let player = this.slack.getUserByID(e.user);
-                channel.postMessage({
-                    as_user:false,
-                    username:'Jira Helper',
-                    icon_url:':trollface:',
-                    text:'huhu',
-                    "attachments": [
-                        {
-                            "fallback": "Required plain-text summary of the attachment.",
-                            "color": "#36a64f",
-                            "pretext": "Optional text that appears above the attachment block",
-                            "author_name": "Bobby Tables",
-                            "author_link": "http://flickr.com/bobby/",
-                            "author_icon": "http://flickr.com/icons/bobby.jpg",
-                            "title": "Slack API Documentation",
-                            "title_link": "https://api.slack.com/",
-                            "text": "Optional text that appears within the attachment",
-                            "fields": [
-                                {
-                                    "title": "Priority",
-                                    "value": "High",
-                                    "short": false
-                                }
-                            ],
-                            "image_url": "http://my-website.com/path/to/image.jpg",
-                            "thumb_url": "http://example.com/path/to/thumb.png"
-                        }
-                    ]
-                });
+    doMessages(message){
+        let issueKeyMatches = message.text.match(/(\w+\-\d+)/i);
+        if(issueKeyMatches){
+            let issueKey = issueKeyMatches[1];
+            let regex = new RegExp('^(comment)(.*)(?:issue)? GM-196 (?:that)?(?:\:)?(.+)+');
+            let matches = regex.exec(message.text);
+            if(matches){
+                let command = matches[1];
+                let comment = matches[3];
+                switch (command){
+                    case 'comment':
+                        this.onCommentIssue(issueKey, comment, message);
+                        break;
+                }
+            }
+            else{
+                this.onGetIssueInfo(issueKey, message);
+            }
+        }
+    }
+    onCommentIssue(issueKey, comment, message){
+        "use strict";
+        let channel = this.slack.getChannelGroupOrDMByID(message.channel);
+        let user = this.slack.getUserByID( message.user );
+        let formatedComment = `[${user.name}|https://enginethemes.slack.com/messages/@${user.name}] : ${comment}`;
+        this.jira.addComment(issueKey, formatedComment, function(error, response){
+            if(error === null){
+                channel.send('Comment added');
+            }
+            else{
+                channel.send('Can no addcomment ' + error);
+            }
+        });
+    }
+    onGetIssueInfo(issueKey, message){
+        "use strict";
+        let channel = this.slack.getChannelGroupOrDMByID(message.channel);
+        this.jira.findIssue(issueKey, function(error, issue){
+            "use strict";
+            if(error){
+                return rx.Observable.return(null);
+            }
+            channel.postMessage({
+                as_user:false,
+                username:'Jira',
+                icon_emoji:':tiger:',
+                attachments: [
+                    {
+                        "fallback": "Required plain-text summary of the attachment.",
+                        "color": JiraHelper.getPriorityColor(issue.fields.priority.id),
+                        "title": issue.fields.summary,
+                        "title_link": `http://agile.youngworld.vn/browse/${issueKey}`,
+                        "text": issue.fields.description,
+                        "fields": [
+                            {
+                                "title": "status",
+                                "value": issue.fields.status.name,
+                                "short": true
+                            },
+                            {
+                                "title": "assignee",
+                                "value": issue.fields.assignee.displayName,
+                                "short": true
+                            },
+                            {
+                                "title": "priority",
+                                "value": issue.fields.priority.name,
+                                "short": true
+                            },
+
+                            {
+                                "title": "creator",
+                                "value": issue.fields.creator.displayName,
+                                "short": true
+                            }
+                        ]
+                    }
+                ]
             });
-        return rx.Observable.return(null);
+        });
     }
     onClientOpened(){
         this.channels = _.keys(this.slack.channels)

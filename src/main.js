@@ -1,6 +1,6 @@
 require('babel/register');
 var http = require('http');
-const config = require('./config');
+const config = require('../config');
 try {
     var pathToken = process.env.SLACK_POKER_BOT_TOKEN;
     var token = pathToken || config.token;
@@ -13,6 +13,6 @@ var Bot = require('./Bot');
 var bot = new Bot(token);
 bot.login();
 
-http.createServer(function(req, res) {
-    res.end('SLACK_JIRE_BOT');
+http.createServer(function(req, response) {
+    response.end();
 }).listen(process.env.PORT || config.port || 5000);
