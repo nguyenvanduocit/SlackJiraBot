@@ -9,14 +9,14 @@ try {
     var jiraPort = process.env.SLACK_JIRA_PORT || config.jira.port;
     var jiraUser = process.env.SLACK_JIRA_USER || config.jira.user;
     var jiraPassword = process.env.SLACK_JIRA_PASSWORD || config.jira.password;
-    var jiraApiVersion = process.env.SLACK_JIRA_API_VERSION || config.jira.apiVersion;
+    var jiraApiVersion = process.env.SLACK_JIRA_API_VERSION || config.jira.ApiVersion;
 } catch (error) {
     console.log("Your API token should be placed in a 'token.txt' file, which is missing.");
     return;
 }
 
 var Bot = require('./Bot');
-var bot = new Bot(token);
+var bot = new Bot(token, jiraHost, jiraPort, jiraUser, jiraPassword, jiraApiVersion);
 bot.login();
 
 http.createServer(function(req, response) {

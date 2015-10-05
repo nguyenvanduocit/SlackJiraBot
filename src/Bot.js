@@ -9,6 +9,11 @@ const JiraHelper = require('./JiraHelper');
 class Bot{
     /**
      * @param token
+     * @param jiraHost
+     * @param jiraPort
+     * @param jiraUser
+     * @param jiraPassword
+     * @param jiraApiVersion
      */
     constructor(token, jiraHost, jiraPort, jiraUser, jiraPassword, jiraApiVersion) {
         this.slack = new Slack(token, true, true);
@@ -39,10 +44,10 @@ class Bot{
 
         return mentionMessages.subscribe((e)=>this.doMessages(e));
     }
+
     /**
      * Do the messages with issue mention.
-     * @param messages
-     * @param channel
+     * @param message
      */
     doMessages(message){
         let issueKeyMatches = message.text.match(/(\w+\-\d+)/i);
@@ -79,11 +84,11 @@ class Bot{
         });
     }
     onGetIssueInfo(issueKey, message){
-        "use strict";
         let channel = this.slack.getChannelGroupOrDMByID(message.channel);
-        this.jira.findIssue(issueKey, function(error, issue){
-            "use strict";
+        this.jira.findIssue('GM-345', function(error, issue){
             if(error){
+                console.log(error);
+                channel.send(error);
                 return rx.Observable.return(null);
             }
             channel.postMessage({
