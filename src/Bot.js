@@ -85,7 +85,7 @@ class Bot{
     }
     onGetIssueInfo(issueKey, message){
         let channel = this.slack.getChannelGroupOrDMByID(message.channel);
-        this.jira.findIssue('GM-345', function(error, issue){
+        this.jira.findIssue(issueKey, function(error, issue){
             if(error){
                 console.log(error);
                 channel.send(error);
