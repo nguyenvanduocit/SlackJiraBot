@@ -118,7 +118,6 @@ class Bot{
                                 "value": issue.fields.priority.name,
                                 "short": true
                             },
-
                             {
                                 "title": "creator",
                                 "value": issue.fields.creator.displayName,
