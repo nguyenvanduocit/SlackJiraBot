@@ -11,9 +11,9 @@ class Bot{
     /**
      * @param token
      */
-    constructor(token) {
+    constructor(token, jiraHost, jiraPort, jiraUser, jiraPassword, jiraApiVersion) {
         this.slack = new Slack(token, true, true);
-        this.jira = new JiraApi('http', config.jira.host, config.jira.port, config.jira.user, config.jira.password, config.jira.ApiVersion);
+        this.jira = new JiraApi('http', jiraHost, jiraPort, jiraUser, jiraPassword, jiraApiVersion);
     }
 
     login(){

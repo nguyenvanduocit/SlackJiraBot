@@ -2,6 +2,10 @@
   "name": "slack-jira-bot",
   "version": "0.0.95",
   "repository": "https://github.com/nguyenvanduocit/slack-jira-bot",
+  "engines": {
+    "node": "4.1.1",
+    "npm": "2.1.x"
+  },
   "scripts": {
     "start": "node src/main.js"
   },
