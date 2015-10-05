@@ -53,7 +53,7 @@ class Bot{
         let issueKeyMatches = message.text.match(/(\w+\-\d+)/i);
         if(issueKeyMatches){
             let issueKey = issueKeyMatches[1];
-            let regex = new RegExp('^(comment)(.*)(?:issue)? GM-196 (?:that)?(?:\:)?(.+)+');
+            let regex = new RegExp('^(comment)(.*)(?:issue)? (\w+\-\d+) (?:that)?(?:\:)?(.+)+');
             let matches = regex.exec(message.text);
             if(matches){
                 let command = matches[1];
