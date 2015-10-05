@@ -3,7 +3,6 @@ const Backbone = require('backbone');
 const  _ = require('underscore');
 const rx = require('rx');
 const JiraApi = require('jira').JiraApi;
-const config = require('../config');
 const UserInteraction = require('./UserInteraction');
 const JiraHelper = require('./JiraHelper');
 

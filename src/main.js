@@ -1,7 +1,9 @@
 require('babel/register');
 var http = require('http');
-const config = require('../config');
 try {
+    if(!process.env.SLACK_JIRA_BOT_TOKEN || !process.env.SLACK_JIRA_HOST || !process.env.SLACK_JIRA_PORT || !process.env.SLACK_JIRA_USER || !process.env.SLACK_JIRA_PASSWORD || !process.env.SLACK_JIRA_API_VERSION){
+        const config = require('../config');
+    }
     var token = process.env.SLACK_JIRA_BOT_TOKEN || config.token;
     var jiraHost = process.env.SLACK_JIRA_HOST || config.jira.host;
     var jiraPort = process.env.SLACK_JIRA_PORT || config.jira.port;
