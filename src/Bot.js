@@ -91,6 +91,39 @@ class Bot{
                 channel.send(error);
                 return rx.Observable.return(null);
             }
+            var fields = [
+                {
+                    "title": "status",
+                    "value": issue.fields.status.name,
+                    "short": true
+                },
+                {
+                    "title": "assignee",
+                    "value": issue.fields.assignee.displayName,
+                    "short": true
+                },
+                {
+                    "title": "priority",
+                    "value": issue.fields.priority.name,
+                    "short": true
+                },
+                {
+                    "title": "creator",
+                    "value": issue.fields.creator.displayName,
+                    "short": true
+                }
+            ];
+            if( (typeof issue.fields.comment != 'undefined') && (issue.fields.comment.total > 0) ){
+
+                var lastComment = issue.fields.comment.comments[issue.fields.comment.total - 1];
+                fields.push(
+                {
+                    "title": `Last comment by ${lastComment.author.displayName}`,
+                    "value": lastComment.body,
+                    "short": false
+                });
+            }
+
             channel.postMessage({
                 as_user:false,
                 username:'Jira',
@@ -102,28 +135,7 @@ class Bot{
                         "title": issue.fields.summary,
                         "title_link": `http://agile.youngworld.vn/browse/${issueKey}`,
                         "text": issue.fields.description,
-                        "fields": [
-                            {
-                                "title": "status",
-                                "value": issue.fields.status.name,
-                                "short": true
-                            },
-                            {
-                                "title": "assignee",
-                                "value": issue.fields.assignee.displayName,
-                                "short": true
-                            },
-                            {
-                                "title": "priority",
-                                "value": issue.fields.priority.name,
-                                "short": true
-                            },
-                            {
-                                "title": "creator",
-                                "value": issue.fields.creator.displayName,
-                                "short": true
-                            }
-                        ]
+                        "fields":fields
                     }
                 ]
             });
