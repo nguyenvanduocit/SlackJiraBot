@@ -39,7 +39,7 @@ class Bot{
 
     // Returns an {Observable} that signals completion of the game
     handleMessageEvent(){
-        let messages = rx.Observable.fromEvent(this.slack, 'message').where(e => ( e.type === 'message' && e.subtype !='bot_message' ));
+        let messages = rx.Observable.fromEvent(this.slack, 'message').where(e => ( e.type === 'message' && e.subtype !='bot_message' && (typeof e.text !='undefined')));
         let mentionMessages = messages.where(e =>e.text.toLowerCase().match(/(\w+\-\d+)/i));
 
         return mentionMessages.subscribe((e)=>this.doMessages(e));
