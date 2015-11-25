@@ -19,7 +19,6 @@ class Bot{
         this.slack = new Slack(token, true, true);
         this.jira = new JiraApi('http', jiraHost, jiraPort, jiraUser, jiraPassword, jiraApiVersion);
     }
-
     login(){
         rx.Observable.fromEvent(this.slack, 'open')
             .subscribe(() => this.onClientOpened());
@@ -88,7 +87,6 @@ class Bot{
         this.jira.findIssue(issueKey, function(error, issue){
             if(error){
                 console.log(error);
-                channel.send(error);
                 return rx.Observable.return(null);
             }
             var fields = [
